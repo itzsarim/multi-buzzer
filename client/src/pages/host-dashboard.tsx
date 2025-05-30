@@ -273,31 +273,17 @@ export default function HostDashboard({ roomCode }: HostDashboardProps) {
 
           {/* Game Area */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Game Status Display */}
+            {/* Buzzer Status Display */}
             <Card className="bg-gradient-to-r from-gray-800 to-gray-700 border-gray-600">
               <CardContent className="p-8">
                 <div className="text-center">
-                  <h2 className="text-4xl font-bold mb-4 text-white">Round {room.currentRound} - Question 5</h2>
-                  <div className="flex items-center justify-center space-x-4 mb-6">
-                    <div className="bg-gray-700 rounded-lg px-6 py-3">
-                      <div className="text-2xl font-bold text-green-500">{timer}</div>
-                      <div className="text-gray-400 text-sm">Time Remaining</div>
-                    </div>
-                    <div className="bg-gray-700 rounded-lg px-6 py-3">
-                      <div className="text-2xl font-bold text-blue-500">150</div>
-                      <div className="text-gray-400 text-sm">Points</div>
-                    </div>
-                  </div>
-                  
-                  <div className="mb-6">
-                    <div className={`inline-flex items-center px-4 py-2 rounded-full font-medium ${
-                      room.buzzerEnabled 
-                        ? 'bg-green-500 text-green-100' 
-                        : 'bg-gray-600 text-gray-300'
-                    }`}>
-                      <span className="w-2 h-2 bg-current rounded-full mr-2"></span>
-                      {room.buzzerEnabled ? 'Buzzers Ready' : 'Buzzers Disabled'}
-                    </div>
+                  <div className={`inline-flex items-center px-6 py-4 rounded-full font-medium text-lg ${
+                    room?.buzzerEnabled 
+                      ? 'bg-green-500 text-green-100' 
+                      : 'bg-gray-600 text-gray-300'
+                  }`}>
+                    <span className="w-3 h-3 bg-current rounded-full mr-3"></span>
+                    {room?.buzzerEnabled ? 'Buzzers Ready' : 'Buzzers Disabled'}
                   </div>
                 </div>
               </CardContent>
