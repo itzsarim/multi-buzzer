@@ -13,7 +13,7 @@ export function useWebSocket(url: string, options: UseWebSocketOptions = {}) {
   const [isConnected, setIsConnected] = useState(false);
 
   const sendMessage = (message: Partial<WebSocketMessage>) => {
-    if (ws.current?.readyState === WebSocket.OPEN) {
+    if (ws.current && ws.current.readyState === WebSocket.OPEN) {
       ws.current.send(JSON.stringify(message));
     }
   };

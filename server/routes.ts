@@ -40,7 +40,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const httpServer = createServer(app);
 
   // WebSocket server
-  const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
+  const wss = new WebSocketServer({ 
+    server: httpServer, 
+    path: '/ws',
+    verifyClient: () => true
+  });
 
   wss.on('connection', (ws) => {
     let playerRoomCode: string | null = null;
@@ -48,29 +52,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     ws.on('message', async (data) => {
       try {
-        const message = JSON.parse(data.toString()) as WebSocketMessage & { playerId?: string };
+        const message = JSON.parse(data.toString()) as any;
         
         if (message.type === 'join_room') {
           playerRoomCode = message.roomCode;
           playerId = message.playerId || null;
           
-          if (!roomConnections.has(playerRoomCode)) {
-            roomConnections.set(playerRoomCode, new Set());
-          }
-          roomConnections.get(playerRoomCode)!.add(ws);
+          if (playerRoomCode) {
+            if (!roomConnections.has(playerRoomCode)) {
+              roomConnections.set(playerRoomCode, new Set());
+            }
+            roomConnections.get(playerRoomCode)!.add(ws);
 
-          // Update player connection status
-          if (playerId) {
-            await storage.updatePlayer(playerId, { isConnected: true });
-          }
+            // Update player connection status
+            if (playerId) {
+              await storage.updatePlayer(playerId, { isConnected: true });
+            }
 
-          // Broadcast updated room state
-          const players = await storage.getPlayersByRoom(playerRoomCode);
-          broadcastToRoom(playerRoomCode, {
-            type: 'room_updated',
-            roomCode: playerRoomCode,
-            data: { players }
-          });
+            // Broadcast updated room state
+            const players = await storage.getPlayersByRoom(playerRoomCode);
+            broadcastToRoom(playerRoomCode, {
+              type: 'room_updated',
+              roomCode: playerRoomCode,
+              data: { players }
+            });
+          }
         }
         
         if (message.type === 'buzzer_pressed' && playerRoomCode && playerId) {
@@ -149,7 +155,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.json(room);
     } catch (error) {
-      res.status(400).json({ message: 'Failed to create room', error: error.message });
+      res.status(400).json({ message: 'Failed to create room', error: String(error) });
     }
   });
 

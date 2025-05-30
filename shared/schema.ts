@@ -43,9 +43,10 @@ export type Player = typeof players.$inferSelect;
 
 // WebSocket message types
 export interface WebSocketMessage {
-  type: 'player_joined' | 'player_left' | 'buzzer_pressed' | 'buzzer_enabled' | 'buzzer_disabled' | 'buzzer_reset' | 'room_updated';
+  type: 'player_joined' | 'player_left' | 'buzzer_pressed' | 'buzzer_enabled' | 'buzzer_disabled' | 'buzzer_reset' | 'room_updated' | 'join_room';
   data?: any;
   roomCode: string;
+  playerId?: string;
 }
 
 export interface BuzzerPressData {
