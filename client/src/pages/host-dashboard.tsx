@@ -13,6 +13,7 @@ interface HostDashboardProps {
 }
 
 export default function HostDashboard({ roomCode }: HostDashboardProps) {
+  console.log('HostDashboard roomCode:', roomCode);
   const { toast } = useToast();
   const [timer, setTimer] = useState("03:45");
   const [firstToBuzz, setFirstToBuzz] = useState<BuzzerPressData | null>(null);
@@ -21,6 +22,7 @@ export default function HostDashboard({ roomCode }: HostDashboardProps) {
   const { data, isLoading } = useQuery({
     queryKey: [`/api/rooms/${roomCode}`],
     refetchInterval: 5000,
+    enabled: !!roomCode,
   });
 
   const room: GameRoom = data?.room;
