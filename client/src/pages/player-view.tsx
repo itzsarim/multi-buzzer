@@ -34,11 +34,15 @@ export default function PlayerView({ roomCode, playerId }: PlayerViewProps) {
       if (room.firstToBuzzPlayerId && !firstToBuzz) {
         const buzzedPlayer = players.find(p => p.id === room.firstToBuzzPlayerId);
         if (buzzedPlayer && buzzedPlayer.buzzTime) {
+          const buzzTimeStr = typeof buzzedPlayer.buzzTime === 'string' 
+            ? buzzedPlayer.buzzTime 
+            : buzzedPlayer.buzzTime.toISOString();
+            
           setFirstToBuzz({
             playerId: buzzedPlayer.id,
             playerName: buzzedPlayer.name,
             timestamp: new Date(buzzedPlayer.buzzTime).getTime(),
-            buzzTime: buzzedPlayer.buzzTime.toISOString()
+            buzzTime: buzzTimeStr
           });
         }
       }
