@@ -42,15 +42,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // WebSocket server
   const wss = new WebSocketServer({ 
     server: httpServer, 
-    path: '/ws',
-    verifyClient: () => true
+    path: '/ws'
   });
 
   wss.on('connection', (ws) => {
+    console.log('New WebSocket connection established');
     let playerRoomCode: string | null = null;
     let playerId: string | null = null;
 
     ws.on('message', async (data) => {
+      console.log('Received WebSocket message:', data.toString());
       try {
         const message = JSON.parse(data.toString()) as any;
         
@@ -283,6 +284,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ success: true });
     } catch (error) {
       res.status(500).json({ message: 'Failed to reset buzzers', error: error.message });
+    }
+  });
+
+  // Buzzer press endpoint
+  app.post('/api/rooms/:code/buzz', async (req, res) => {
+    try {
+      const { playerId } = req.body;
+      const roomCode = req.params.code;
+      
+      if (!playerId) {
+        return res.status(400).json({ message: 'Player ID is required' });
+      }
+
+      const room = await storage.getRoom(roomCode);
+      if (!room || !room.buzzerEnabled) {
+        return res.status(400).json({ message: 'Buzzers are not enabled' });
+      }
+
+      if (room.firstToBuzzPlayerId) {
+        return res.status(400).json({ message: 'Someone already buzzed first' });
+      }
+
+      const player = await storage.getPlayer(playerId);
+      if (!player) {
+        return res.status(404).json({ message: 'Player not found' });
+      }
+
+      const timestamp = Date.now();
+      
+      // Update room with first buzzer
+      await storage.updateRoom(roomCode, { 
+        firstToBuzzPlayerId: playerId 
+      });
+      
+      // Update player
+      await storage.updatePlayer(playerId, { 
+        hasBuzzed: true, 
+        buzzTime: new Date(timestamp) 
+      });
+
+      res.json({ 
+        success: true,
+        firstToBuzz: {
+          playerId,
+          playerName: player.name,
+          timestamp,
+          buzzTime: new Date(timestamp).toISOString()
+        }
+      });
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to process buzzer press', error: String(error) });
     }
   });
 
