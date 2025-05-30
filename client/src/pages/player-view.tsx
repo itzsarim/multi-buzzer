@@ -18,37 +18,47 @@ export default function PlayerView({ roomCode, playerId }: PlayerViewProps) {
 
   const { data } = useQuery({
     queryKey: [`/api/rooms/${roomCode}`],
-    refetchInterval: 5000,
+    refetchInterval: 2000,
   });
 
-  const room: GameRoom = data?.room;
-  const players: Player[] = data?.players || [];
+  const room = data?.room as GameRoom | undefined;
+  const players = (data?.players as Player[]) || [];
   const currentPlayer = players.find(p => p.id === playerId);
 
-  const { sendMessage } = useWebSocket(`/ws`, {
-    onMessage: (message: WebSocketMessage) => {
-      if (message.roomCode === roomCode) {
-        switch (message.type) {
-          case 'buzzer_pressed':
-            const buzzerData = message.data as BuzzerPressData;
-            setFirstToBuzz(buzzerData);
-            if (buzzerData.playerId === playerId) {
-              setHasBuzzed(true);
-            }
-            break;
-          case 'buzzer_enabled':
-            setBuzzerEnabled(true);
-            break;
-          case 'buzzer_disabled':
-            setBuzzerEnabled(false);
-            break;
-          case 'buzzer_reset':
-            setHasBuzzed(false);
-            setFirstToBuzz(null);
-            break;
+  // Update buzzer state based on room data
+  useEffect(() => {
+    if (room) {
+      setBuzzerEnabled(room.buzzerEnabled);
+      
+      // Check if someone buzzed first
+      if (room.firstToBuzzPlayerId && !firstToBuzz) {
+        const buzzedPlayer = players.find(p => p.id === room.firstToBuzzPlayerId);
+        if (buzzedPlayer && buzzedPlayer.buzzTime) {
+          setFirstToBuzz({
+            playerId: buzzedPlayer.id,
+            playerName: buzzedPlayer.name,
+            timestamp: new Date(buzzedPlayer.buzzTime).getTime(),
+            buzzTime: buzzedPlayer.buzzTime.toISOString()
+          });
         }
       }
-    },
+
+      // Reset state when buzzers are reset
+      if (!room.firstToBuzzPlayerId) {
+        setFirstToBuzz(null);
+        setHasBuzzed(false);
+      }
+    }
+  }, [room, players, firstToBuzz]);
+
+  // Update player's buzz status
+  useEffect(() => {
+    if (currentPlayer) {
+      setHasBuzzed(currentPlayer.hasBuzzed);
+    }
+  }, [currentPlayer]);
+
+  const { sendMessage } = useWebSocket(`/ws`, {
     roomCode,
     playerId,
   });
