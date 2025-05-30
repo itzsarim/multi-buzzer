@@ -13,7 +13,6 @@ interface HostDashboardProps {
 }
 
 export default function HostDashboard({ roomCode }: HostDashboardProps) {
-  console.log('HostDashboard roomCode:', roomCode);
   const { toast } = useToast();
   const [timer, setTimer] = useState("03:45");
   const [firstToBuzz, setFirstToBuzz] = useState<BuzzerPressData | null>(null);
@@ -21,31 +20,27 @@ export default function HostDashboard({ roomCode }: HostDashboardProps) {
 
   const { data, isLoading } = useQuery({
     queryKey: [`/api/rooms/${roomCode}`],
-    refetchInterval: 5000,
+    refetchInterval: 2000,
     enabled: !!roomCode,
   });
 
-  const room: GameRoom = data?.room;
-  const players: Player[] = data?.players || [];
+  const room = data?.room as GameRoom | undefined;
+  const players = (data?.players as Player[]) || [];
 
-  // WebSocket connection
-  useWebSocket(`/ws`, {
-    onMessage: (message: WebSocketMessage) => {
-      if (message.roomCode === roomCode) {
-        switch (message.type) {
-          case 'buzzer_pressed':
-            setFirstToBuzz(message.data as BuzzerPressData);
-            break;
-          case 'player_joined':
-          case 'player_left':
-          case 'room_updated':
-            queryClient.invalidateQueries({ queryKey: [`/api/rooms/${roomCode}`] });
-            break;
-        }
+  // Check for first buzz from room data
+  useEffect(() => {
+    if (room?.firstToBuzzPlayerId && !firstToBuzz) {
+      const buzzedPlayer = players.find(p => p.id === room.firstToBuzzPlayerId);
+      if (buzzedPlayer && buzzedPlayer.buzzTime) {
+        setFirstToBuzz({
+          playerId: buzzedPlayer.id,
+          playerName: buzzedPlayer.name,
+          timestamp: new Date(buzzedPlayer.buzzTime).getTime(),
+          buzzTime: buzzedPlayer.buzzTime.toISOString()
+        });
       }
-    },
-    roomCode,
-  });
+    }
+  }, [room?.firstToBuzzPlayerId, players, firstToBuzz]);
 
   const enableBuzzersMutation = useMutation({
     mutationFn: () => apiRequest('POST', `/api/rooms/${roomCode}/enable-buzzers`),
