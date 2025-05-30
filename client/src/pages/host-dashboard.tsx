@@ -29,7 +29,7 @@ export default function HostDashboard({ roomCode }: HostDashboardProps) {
 
   // Check for first buzz from room data
   useEffect(() => {
-    if (room?.firstToBuzzPlayerId && !firstToBuzz) {
+    if (room?.firstToBuzzPlayerId) {
       const buzzedPlayer = players.find(p => p.id === room.firstToBuzzPlayerId);
       if (buzzedPlayer && buzzedPlayer.buzzTime) {
         const buzzTimeStr = typeof buzzedPlayer.buzzTime === 'string' 
@@ -43,8 +43,11 @@ export default function HostDashboard({ roomCode }: HostDashboardProps) {
           buzzTime: buzzTimeStr
         });
       }
+    } else {
+      // Reset when no one has buzzed
+      setFirstToBuzz(null);
     }
-  }, [room?.firstToBuzzPlayerId, players, firstToBuzz]);
+  }, [room?.firstToBuzzPlayerId, players]);
 
   const enableBuzzersMutation = useMutation({
     mutationFn: () => apiRequest('POST', `/api/rooms/${roomCode}/enable-buzzers`),
