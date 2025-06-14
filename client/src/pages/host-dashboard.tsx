@@ -306,35 +306,6 @@ export default function HostDashboard({ roomCode }: HostDashboardProps) {
                 </CardContent>
               </Card>
             )}
-
-            {/* Backup & Recovery Status */}
-            <Card className="bg-gray-800 border-gray-700">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center">
-                  <span className="mr-3 text-green-500">🛡️</span>
-                  Automated Backup & Recovery
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="bg-gray-700 rounded-lg p-4 text-center">
-                    <div className="text-green-500 text-2xl mb-2">☁️</div>
-                    <div className="text-sm text-gray-400">Last Backup</div>
-                    <div className="font-medium text-white">{lastBackup}</div>
-                  </div>
-                  <div className="bg-gray-700 rounded-lg p-4 text-center">
-                    <div className="text-blue-500 text-2xl mb-2">💾</div>
-                    <div className="text-sm text-gray-400">Data Status</div>
-                    <div className="font-medium text-green-500">Synchronized</div>
-                  </div>
-                  <div className="bg-gray-700 rounded-lg p-4 text-center">
-                    <div className="text-amber-500 text-2xl mb-2">🕐</div>
-                    <div className="text-sm text-gray-400">Recovery Points</div>
-                    <div className="font-medium text-white">24 available</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </div>
       </div>
